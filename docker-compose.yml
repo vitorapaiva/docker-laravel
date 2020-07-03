@@ -1,0 +1,46 @@
+###############################################################################
+#                          Generated on phpdocker.io                          #
+#                          Customized by vitorapaiva                          #
+###############################################################################
+version: "3.1"
+services:
+
+    memcached:
+      image: memcached:alpine
+      container_name: docker-laravel-memcached
+
+    redis:
+      image: redis:alpine
+      container_name: docker-laravel-redis
+
+    mysql:
+      image: mysql:5.7
+      container_name: docker-laravel-mysql
+      working_dir: /application
+      volumes:
+        - ${MYSQL_DATA}:/var/lib/mysql
+      environment:
+        - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        - MYSQL_DATABASE=${MYSQL_DATABASE}
+        - MYSQL_USER=${MYSQL_USER}
+        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      ports:
+        - "9002:3306"
+
+    webserver:
+      image: nginx:alpine
+      container_name: docker-laravel-webserver
+      working_dir: /application
+      volumes:
+          - ${APP_PATH}:/application
+          - ./phpdocker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      ports:
+       - "9000:80"
+
+    php-fpm:
+      build: phpdocker/php-fpm
+      container_name: docker-laravel-php-fpm
+      working_dir: /application
+      volumes:
+        - ${APP_PATH}:/application
+        - ./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/7.4/fpm/conf.d/99-overrides.ini
